@@ -1,6 +1,9 @@
 from Tkinter import *
 from Commands import enterChatVar
 from WindowHelpers import setupGrid
+import cPickle as pickle
+import socket
+import Serialization
 
 class GameWindow(Frame):
     
@@ -55,7 +58,7 @@ class LoginWindow(Frame):
         Frame.__init__(self, master)
         self.setupVariables()
         self.createWindow()
-        
+        self.loginServerAddress = "localhost" # Change this when releasing
         
     def setupVariables(self):
         self.username = StringVar()
@@ -72,10 +75,26 @@ class LoginWindow(Frame):
         Label(self.master, text="Password : ").grid(row=1, column=0)
         Entry(self.master, textvariable=self.username).grid(row=0, column=1)
         Entry(self.master, textvariable=self.password, show="*").grid(row=1, column=1)
-        Button(self.master, text="Login").grid(row=2, column=0)
+        Button(self.master, command=self.attemptLogin, text="Login").grid(row=2, column=0)
         
     def attemptLogin(self):
-        return
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        conn.connect((self.loginServerAddress, 8123))
+        try:
+            packet = {"username": self.username.get(), "password": self.password.get()}
+            conn.send(Serialization.serialize(packet))
+            data = conn.recv(1024)
+            if data:
+                data = Serialization.deserialize(data)
+                print "Client recieved data : " + str(data)
+        except:
+            conn.close()
+                
+    def showSuccess(self):
+        top = Toplevel()
+        top.title("Login Success!")
+        Message(top, text="You have successfully logged in!").pack()
+        Button(top, text="Close", command=top.destroy).pack()
 
 def setupWindow():
     win = LoginWindow()
