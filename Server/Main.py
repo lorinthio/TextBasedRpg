@@ -1,4 +1,5 @@
 from threading import Thread
+from Client import ClientConnection
 import Serialization
 import socket
 
@@ -6,6 +7,7 @@ class Server:
     
     def __init__(self, host, port):
         self.clients = []
+        self.currentID = 0
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,38 +22,15 @@ class Server:
         while True:
             client, address = self.sock.accept()
             client.settimeout(60)
-            Thread(target = self.listenToClient, args= (client, address)).start()
-            
-    def listenToClient(self, client, address):
+            Thread(target = self.handleClientConnection, args= (client, address)).start()
+        
+    def handleClientConnection(self, client, address):
         print "Got Client Connection"
-        size = 1024
-        while True:
-            try:
-                data = Serialization.deserialize(client.recv(size))
-                if data:
-                    # Set the response to echo back the recieved data
-                    response = data
-                    print "Recieved {}".format(data)
-                    client.send(Serialization.serialize(data))
-                else:
-                    raise error('Client disconnected')
-            except:
-                client.close()
-                return False
+        self.currentID = self.currentID + 1
+        self.clients.append(ClientConnection(client, address, self.currentID))
         
-    def handleClientConnection(self, client):
-        return
-        
-class ClientConnection:
-    
-    def __init__(self, ID):
-        self.ID = ID
-        
-        
-def main():
+if __name__ == "__main__":
     server = Server('', 8123).listen()
     print "Server Closed..."
     print "Hit enter to close this window"
     raw_input()
-    
-main()

@@ -1,6 +1,7 @@
 from Tkinter import *
 from Commands import enterChatVar
 from WindowHelpers import setupGrid
+from Utils import PacketTypes
 import cPickle as pickle
 import socket
 import Serialization
@@ -78,29 +79,52 @@ class LoginWindow(Frame):
         Button(self.master, command=self.attemptLogin, text="Login").grid(row=2, column=0)
         
     def attemptLogin(self):
-        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        conn.connect((self.loginServerAddress, 8123))
         try:
-            packet = {"username": self.username.get(), "password": self.password.get()}
-            conn.send(Serialization.serialize(packet))
-            data = conn.recv(1024)
-            if data:
-                data = Serialization.deserialize(data)
-                print "Client recieved data : " + str(data)
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect((self.loginServerAddress, 8123))
+            try:
+                packet = Serialization.pack("LOGIN", {"username": self.username.get(), "password": self.password.get()})
+                conn.send(packet)
+                data = conn.recv(1024)
+                if data:
+                    data = Serialization.deserialize(data)
+                    messageType = data["message"]
+                    print str(data)
+                    if(messageType == PacketTypes.LOGIN_SUCCESS):
+                        self.showSuccess()
+                    elif(messageType == PacketTypes.LOGIN_FAILURE):
+                        self.showFailure()
+            except:
+                conn.close()
         except:
-            conn.close()
+            self.failedConnection()
+                
+    def makeNotification(self, title):
+        top = Toplevel()
+        top.title(title)
+        top.minsize(300, 60)
+        top.maxsize(300, 60)
+        return top
                 
     def showSuccess(self):
-        top = Toplevel()
-        top.title("Login Success!")
-        Message(top, text="You have successfully logged in!").pack()
+        top = self.makeNotification("Login Success!")
+        Message(top, text="You have successfully logged in!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack()
+        
+    def showFailure(self):
+        top = self.makeNotification("Login Failure!")
+        Message(top, text="Invalid username/password", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack()
+                
+    def failedConnection(self):
+        top = self.makeNotification("Connection Failed!")
+        Message(top, text="There was no response from the server", width=250).pack()
         Button(top, text="Close", command=top.destroy).pack()
 
-def setupWindow():
+def start():
     win = LoginWindow()
     win.mainloop()
-    
-    return
-    win = GameWindow()
-    win.mainloop()
+
+    #win = GameWindow()
+    #win.mainloop()
     

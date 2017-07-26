@@ -1,8 +1,5 @@
 # Import from other libraries
-from Windows import setupWindow
+from Windows import start
 
-def main():
-     setupWindow()
-	
-# leave this at the very end of your file
-main()
+if __name__ == "__main__":
+     start()
