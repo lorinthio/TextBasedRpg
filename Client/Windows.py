@@ -75,7 +75,7 @@ class LoginWindow(Frame):
         Button(self.master, text="Login").grid(row=2, column=0)
         
     def attemptLogin(self):
-        
+        return
 
 def setupWindow():
     win = LoginWindow()
