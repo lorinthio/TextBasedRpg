@@ -73,6 +73,9 @@ class LoginWindow(Frame):
         Entry(self.master, textvariable=self.username).grid(row=0, column=1)
         Entry(self.master, textvariable=self.password, show="*").grid(row=1, column=1)
         Button(self.master, text="Login").grid(row=2, column=0)
+        
+    def attemptLogin(self):
+        
 
 def setupWindow():
     win = LoginWindow()
