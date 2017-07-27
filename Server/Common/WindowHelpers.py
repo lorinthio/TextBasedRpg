@@ -1,3 +1,5 @@
+from Tkinter import Toplevel
+
 def setupGrid(frame, width, height):
     frame.grid()  
     for x in range(width):
@@ -15,3 +17,14 @@ def centerWindow(window, width, height):
     y = (hs/2) - (height/2)        
 
     window.geometry("{}x{}+{}+{}".format(width, height, x, y))  
+    
+def makeNotification(title):
+    top = Toplevel()
+    top.title(title)
+    
+    w = 300
+    h = 60
+    
+    centerWindow(top, w, h)
+    
+    return top 

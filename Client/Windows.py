@@ -1,6 +1,6 @@
 from Tkinter import *
 from Commands import enterChatVar
-from Common.WindowHelpers import setupGrid, centerWindow
+from Common.WindowHelpers import setupGrid, centerWindow, makeNotification
 from Common.Utils import PacketTypes
 import cPickle as pickle
 import socket
@@ -64,77 +64,154 @@ class LoginWindow(Frame):
     def setupVariables(self):
         self.username = StringVar()
         self.password = StringVar()
+        self.email = StringVar()
+        self.activeFrame = None
         
     def createLoginWindow(self):
+        if self.activeFrame:
+            self.activeFrame.destroy()
         width = 250
         height = 70
         
         frame = Frame(self.master)
         setupGrid(self.master, 2, 3)
         frame.grid(row=0, column=0, rowspan=3, columnspan=2)
+        self.activeFrame = frame
         setupGrid(frame, 2, 3)
         self.master.title("Login")
         self.master.minsize(width, height)
         self.master.maxsize(width, height)
         
-        Label(self.master, text="Username : ").grid(row=0, column=0)
-        Label(self.master, text="Password : ").grid(row=1, column=0)
-        Entry(self.master, textvariable=self.username).grid(row=0, column=1)
-        Entry(self.master, textvariable=self.password, show="*").grid(row=1, column=1)
-        Button(self.master, command=self.attemptLogin, text="Login").grid(row=2, column=0)
-        
+        Label(frame, text="Username : ").grid(row=0, column=0)
+        Label(frame, text="Password : ").grid(row=1, column=0)
+        Entry(frame, textvariable=self.username).grid(row=0, column=1)
+        Entry(frame, textvariable=self.password, show="*").grid(row=1, column=1)
+        Button(frame, command=self.attemptLogin, text="Login").grid(row=2, column=0)
+        Button(frame, command=self.createAccountCreationWindow, text="Register").grid(row=2, column=1)
         centerWindow(self.master, width, height)
         
     def createAccountCreationWindow(self):
+        if self.activeFrame:
+            self.activeFrame.destroy()
+        width = 250
+        height = 90
+        
         frame = Frame(self.master)
         setupGrid(self.master, 2, 4)
+        frame.grid(row=0, column=0, rowspan=4, columnspan=2)
+        self.activeFrame = frame
+        
+        self.master.title("Register")
+        Label(frame, text="Email : ").grid(row=0, column=0)
+        Label(frame, text="Username : ").grid(row=1, column=0)
+        Label(frame, text="Password : ").grid(row=2, column=0)
+        Entry(frame, textvariable=self.email).grid(row=0, column=1)
+        Entry(frame, textvariable=self.username).grid(row=1, column=1)
+        Entry(frame, textvariable=self.password, show="*").grid(row=2, column=1)
+        Button(frame, command=self.attemptCreate, text="Create").grid(row=3, column=0)
+        Button(frame, command=self.createLoginWindow, text="Cancel").grid(row=3, column=1) 
+        centerWindow(self.master, width, height)       
+        
         
     def attemptLogin(self):
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.loginServerAddress, 8123))
             try:
-                packet = Serialization.pack("LOGIN", {"username": self.username.get(), "password": self.password.get()})
+                packet = Serialization.pack(PacketTypes.LOGIN, {"username": self.username.get(), "password": self.password.get()})
                 conn.send(packet)
                 data = conn.recv(1024)
                 if data:
                     data = Serialization.deserialize(data)
                     messageType = data["message"]
-                    print str(data)
                     if(messageType == PacketTypes.LOGIN_SUCCESS):
-                        self.showSuccess()
+                        self.showLoginSuccess()
                     elif(messageType == PacketTypes.LOGIN_FAILURE):
-                        self.showFailure()
+                        self.showLoginFailure()
             except:
                 conn.close()
         except:
-            self.failedConnection()
-                
-    def makeNotification(self, title):
-        top = Toplevel()
-        top.title(title)
-        
-        w = 300
-        h = 60
-        
-        centerWindow(top, w, h)
-        
-        return top      
-                
-    def showSuccess(self):
-        top = self.makeNotification("Login Success!")
+            self.failedConnection()        
+      
+    def showLoginSuccess(self):
+        top = makeNotification("Login Success!")
         Message(top, text="You have successfully logged in!", width=250).pack()
         Button(top, text="Close", command=top.destroy).pack()
         
-    def showFailure(self):
-        top = self.makeNotification("Login Failure!")
+    def showLoginFailure(self):
+        top = makeNotification("Login Failure!")
         Message(top, text="Invalid username/password", width=250).pack()
         Button(top, text="Close", command=top.destroy).pack()
                 
     def failedConnection(self):
-        top = self.makeNotification("Connection Failed!")
+        top = makeNotification("Connection Failed!")
         Message(top, text="There was no response from the server", width=250).pack()
         Button(top, text="Close", command=top.destroy).pack()
+        
+    def attemptCreate(self):
+        try:
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect((self.loginServerAddress, 8123))
+            try:
+                packet = Serialization.pack(PacketTypes.ACCOUNT_CREATE, {"username": self.username.get(), "password": self.password.get(), "email": self.email.get()})
+                conn.send(packet)
+                data = conn.recv(1024)
+                if data:
+                    data = Serialization.deserialize(data)
+                    messageType = data["message"]
+                    if(messageType == PacketTypes.ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS):
+                        self.showErrorAccountExists()
+                    elif(messageType == PacketTypes.ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS):
+                        self.showErrorEmailExists()
+                    elif(messageType == PacketTypes.ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS):
+                        self.showErrorUsernameExists()
+                    elif(messageType == PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_PASSWORD):
+                        self.showErrorInvalidPassword()
+                    elif(messageType == PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_USERNAME):
+                        self.showErrorInvalidUsername()
+                    elif(messageType == PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_EMAIL):
+                        self.showErrorInvalidEmail()                        
+                    elif(messageType == PacketTypes.ACCOUNT_CREATE_SUCCESS):
+                        self.showAccountCreateSuccess()
+            finally:
+                conn.close()
+        except:
+            self.failedConnection()
+            
+    def showErrorAccountExists(self):
+        top = makeNotification("Error!")
+        Message(top, text="Account exists with your username or email!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack()
+        
+    def showErrorEmailExists(self):
+        top = makeNotification("Error!")
+        Message(top, text="Account exists with that email!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack()   
+        
+    def showErrorUsernameExists(self):
+        top = makeNotification("Error!")
+        Message(top, text="Account exists with that username!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack() 
+        
+    def showErrorInvalidPassword(self):
+        top = makeNotification("Error!")
+        Message(top, text="Your password must contain a number!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack() 
+        
+    def showErrorInvalidEmail(self):
+        top = makeNotification("Error!")
+        Message(top, text="Please enter a valid email!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack()     
+        
+    def showErrorInvalidUsername(self):
+        top = makeNotification("Error!")
+        Message(top, text="Your username must be 7-20 characters long!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack() 
+        
+    def showAccountCreateSuccess(self):
+        top = makeNotification("Account Creation Success!")
+        Message(top, text="You account was created successfully!", width=250).pack()
+        Button(top, text="Close", command=top.destroy).pack()  
 
 def start():
     win = LoginWindow()
