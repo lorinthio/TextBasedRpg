@@ -1,65 +1,22 @@
 from Tkinter import *
 from Commands import enterChatVar
 from Common.WindowHelpers import setupGrid, centerWindow, makeNotification
-from Common.Utils import PacketTypes
+from Common.Utils import PacketTypes, getConfig
+from Objects import Player
 import cPickle as pickle
 import socket
 import Common.Serialization as Serialization
 
-class GameWindow(Frame):
-    
-    def __init__(self, master=None):
-        Frame.__init__(self, master)
-        setupGrid(self.master, 6, 8)
-        self.setupVariables()
-        self.setupWindow()
-        self.setupChatFrame()
-        self.setupCharacterFrame()
-        self.entryBar()
-        self.setupKeyBindings()
-
-    def setupVariables(self):
-        self.entryVar = StringVar()
-        self.chatText = None
-
-
-    def setupWindow(self):
-        self.master.title("Text Based Adventure")
-        self.master.maxsize(1000, 800)
-        self.master.minsize(600,400)
-        self.master["bg"] = "white"
-        
-    def setupCharacterFrame(self):
-        frame = Frame(self.master)
-        frame.grid(row=0, column=0, rowspan=6, columnspan=2, sticky=W+E+S+N)
-        
-        Label(frame, text="Character", font=("Helvetica", 16), justify=LEFT, anchor=W).pack()
-        
-    def setupChatFrame(self):
-        frame = Frame(self.master, bg="black")
-        setupGrid(frame, 4, 6)
-        frame.grid(row=0, column=2, rowspan=6, columnspan=4, sticky=W+E+S+N)
-        chatText = Text(frame, wrap=WORD)
-        chatText.grid(row=0, column=0, rowspan=6, columnspan=4, sticky=W+E+S+N)
-        scrollbar = Scrollbar(frame, command=chatText.yview)
-        chatText['yscrollcommand'] = scrollbar.set
-        self.chatText = chatText
-        
-    def setupKeyBindings(self):
-        self.master.bind('<Return>', 
-                    lambda event:
-                         enterChatVar(self.chatText, self.entryVar))
-        
-    def entryBar(self):
-        Entry(self.master, textvariable=self.entryVar).grid(row=5, column=2, rowspan=1, columnspan=6, sticky=W+E+S)
-
 class LoginWindow(Frame):
     
-    def __init__(self, master=None):
+    def __init__(self, player, master=None):
         Frame.__init__(self, master)
+        self.player = player
         self.setupVariables()
         self.createLoginWindow()
-        self.loginServerAddress = "localhost" # Change this when releasing
+        config = getConfig()
+        self.ServerAddress = config.ServerAddress # Change this when releasing
+        self.Port = config.Port
         
     def setupVariables(self):
         self.username = StringVar()
@@ -116,7 +73,7 @@ class LoginWindow(Frame):
     def attemptLogin(self):
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn.connect((self.loginServerAddress, 8123))
+            conn.connect((self.ServerAddress, self.Port))
             try:
                 packet = Serialization.pack(PacketTypes.LOGIN, {"username": self.username.get(), "password": self.password.get()})
                 conn.send(packet)
@@ -126,12 +83,18 @@ class LoginWindow(Frame):
                     messageType = data["message"]
                     if(messageType == PacketTypes.LOGIN_SUCCESS):
                         self.showLoginSuccess()
+                        self.updatePlayer()
+                        self.close()
                     elif(messageType == PacketTypes.LOGIN_FAILURE):
                         self.showLoginFailure()
             except:
                 conn.close()
         except:
             self.failedConnection()        
+      
+    def updatePlayer(self):
+        self.player.username = self.username.get()
+        self.player.isLoggedIn = True
       
     def showLoginSuccess(self):
         top = makeNotification("Login Success!")
@@ -151,7 +114,7 @@ class LoginWindow(Frame):
     def attemptCreate(self):
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn.connect((self.loginServerAddress, 8123))
+            conn.connect((self.ServerAddress, self.Port))
             try:
                 packet = Serialization.pack(PacketTypes.ACCOUNT_CREATE, {"username": self.username.get(), "password": self.password.get(), "email": self.email.get()})
                 conn.send(packet)
@@ -211,12 +174,14 @@ class LoginWindow(Frame):
     def showAccountCreateSuccess(self):
         top = makeNotification("Account Creation Success!")
         Message(top, text="You account was created successfully!", width=250).pack()
-        Button(top, text="Close", command=top.destroy).pack()  
+        Button(top, text="Close", command=top.destroy).pack()
+        
+        self.createLoginWindow()
+        
+    def close(self):
+        self.master.destroy()
 
-def start():
-    win = LoginWindow()
+def login(player):
+    win = LoginWindow(player)
     win.mainloop()
-
-    #win = GameWindow()
-    #win.mainloop()
     

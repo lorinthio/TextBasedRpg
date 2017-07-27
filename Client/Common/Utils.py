@@ -1,18 +1,40 @@
 class PacketTypes:
     
-    # Login Oriented
-    LOGIN = 0
-    LOGIN_SUCCESS = 1
-    LOGIN_FAILURE = 2
+    # Common
+    PING = 0
     
-    ACCOUNT_CREATE = 5
-    ACCOUNT_CREATE_SUCCESS = 6
-    ACCOUNT_CREATE_FAILURE_INVALID_USERNAME = 7
-    ACCOUNT_CREATE_FAILURE_INVALID_PASSWORD = 8
-    ACCOUNT_CREATE_FAILURE_INVALID_EMAIL = 9
-    ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS = 10
-    ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS = 11
-    ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS = 12
+    ###################
+    ##    Login
+    ###################
+    # Client
+    LOGIN = 5
+    # Server
+    LOGIN_SUCCESS = 6
+    LOGIN_FAILURE = 7
+    
+    ###################
+    ##    Account 
+    ###################
+    # Client
+    ACCOUNT_CREATE = 10
+    # Server
+    ACCOUNT_CREATE_SUCCESS = 11
+    ACCOUNT_CREATE_FAILURE_INVALID_USERNAME = 12
+    ACCOUNT_CREATE_FAILURE_INVALID_PASSWORD = 13
+    ACCOUNT_CREATE_FAILURE_INVALID_EMAIL = 14
+    ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS = 15
+    ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS = 16
+    ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS = 17
+
+class Config:
+    
+    def __init__(self):
+        self.ServerAddress = "localhost"
+        self.Port = 8123
+        self.PacketSize = 1024
+        
+def getConfig():
+    return Config()
 
 def toSqlString(value):
     return "'" + str(value) + "'"

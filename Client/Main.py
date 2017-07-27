@@ -1,5 +1,10 @@
 # Import from other libraries
-from Windows import start
+from Objects import Player
+from Login import login
+from Game import start
 
 if __name__ == "__main__":
-     start()
+     player = Player()
+     login(player)
+     if player.isLoggedIn:
+          start(player)

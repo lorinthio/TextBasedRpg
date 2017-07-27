@@ -15,6 +15,8 @@ class ServerPacketHandler:
             self.handleLogin(data, client)
         elif(msg == PacketTypes.ACCOUNT_CREATE):
             self.handleAccountCreate(data, client)
+        elif(msg == PacketTypes.PING):
+            print "PING"
             
     def handleLogin(self, data, client):
         username = data["username"]
