@@ -1,6 +1,6 @@
 from Tkinter import *
 from Commands import enterChatVar
-from WindowHelpers import setupGrid
+from WindowHelpers import setupGrid, centerWindow
 from Utils import PacketTypes
 import cPickle as pickle
 import socket
@@ -83,7 +83,7 @@ class LoginWindow(Frame):
         Entry(self.master, textvariable=self.password, show="*").grid(row=1, column=1)
         Button(self.master, command=self.attemptLogin, text="Login").grid(row=2, column=0)
         
-        self.centerWindow(self.master, width, height)
+        centerWindow(self.master, width, height)
         
     def createAccountCreationWindow(self):
         frame = Frame(self.master)
@@ -117,20 +117,9 @@ class LoginWindow(Frame):
         w = 300
         h = 60
         
-        self.centerWindow(top, w, h)
+        centerWindow(top, w, h)
         
-        return top
-    
-    def centerWindow(self, window, width, height):
-        window.minsize(width, height)
-        window.maxsize(width, height)
-    
-        ws = self.master.winfo_screenwidth()
-        hs = self.master.winfo_screenheight()
-        x = (ws/2) - (width/2)
-        y = (hs/2) - (height/2)        
-    
-        window.geometry("{}x{}+{}+{}".format(width, height, x, y))        
+        return top      
                 
     def showSuccess(self):
         top = self.makeNotification("Login Success!")
