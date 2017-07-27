@@ -58,16 +58,18 @@ class LoginWindow(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.setupVariables()
-        self.createWindow()
+        self.createLoginWindow()
         self.loginServerAddress = "localhost" # Change this when releasing
         
     def setupVariables(self):
         self.username = StringVar()
         self.password = StringVar()
         
-    def createWindow(self):
-        self.master.grid()
+    def createLoginWindow(self):
+        frame = Frame(self.master)
         setupGrid(self.master, 2, 3)
+        frame.grid(row=0, column=0, rowspan=3, columnspan=2)
+        setupGrid(frame, 2, 3)
         self.master.title("Login")
         self.master.minsize(250, 70)
         self.master.maxsize(250, 70)
@@ -77,6 +79,10 @@ class LoginWindow(Frame):
         Entry(self.master, textvariable=self.username).grid(row=0, column=1)
         Entry(self.master, textvariable=self.password, show="*").grid(row=1, column=1)
         Button(self.master, command=self.attemptLogin, text="Login").grid(row=2, column=0)
+        
+    def createAccountCreationWindow(self):
+        frame = Frame(self.master)
+        setupGrid(self.master, 2, 4)
         
     def attemptLogin(self):
         try:
@@ -102,8 +108,19 @@ class LoginWindow(Frame):
     def makeNotification(self, title):
         top = Toplevel()
         top.title(title)
-        top.minsize(300, 60)
-        top.maxsize(300, 60)
+        
+        w = 300
+        h = 60
+        
+        top.minsize(w, h)
+        top.maxsize(w, h)
+        
+        ws = self.master.winfo_screenwidth()
+        hs = self.master.winfo_screenheight()
+        x = (ws/2) - (w/2)
+        y = (hs/2) - (h/2)        
+        
+        top.geometry("{}x{}+{}+{}".format(w, h, x, y))
         return top
                 
     def showSuccess(self):
