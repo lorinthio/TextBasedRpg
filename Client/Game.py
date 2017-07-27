@@ -14,7 +14,7 @@ class GameWindow(Frame):
         self.setupVariables()
         self.setupWindow()
         self.setupChatFrame()
-        self.setupCharacterFrame()
+        self.characterFrame = CharacterFrame(self)
         self.entryBar()
         self.setupKeyBindings()
         self.connect()
@@ -28,12 +28,6 @@ class GameWindow(Frame):
         self.master.maxsize(1000, 800)
         self.master.minsize(600,400)
         self.master["bg"] = "white"
-        
-    def setupCharacterFrame(self):
-        frame = Frame(self.master)
-        frame.grid(row=0, column=0, rowspan=6, columnspan=2, sticky=W+E+S+N)
-        
-        Label(frame, text="Character", font=("Helvetica", 16), justify=LEFT, anchor=W).pack()
         
     def setupChatFrame(self):
         frame = Frame(self.master, bg="black")
@@ -61,6 +55,25 @@ class GameWindow(Frame):
     def disconnect(self):
         self.client.disconnect()
         self.master.destroy()
+
+class CharacterFrame(Frame):
+    
+    def __init__(self, master):
+        self.setupVariables()
+        frame = Frame(self.master)
+        frame.grid(row=0, column=0, rowspan=6, columnspan=2, sticky=W+E+S+N)
+    
+        Label(frame, text="Character", font=("Helvetica", 16), justify=LEFT, anchor=W).pack()
+        
+    def setupVariables(self):
+        self.name = ""
+        self.health = 100
+        self.maxhealth = 100
+        self.mana = 100
+        self.maxmana = 100
+        
+    def handleCharacterPacket(self, packet):
+        continue
 
 def start(player):
     win = GameWindow(player)

@@ -25,6 +25,13 @@ class PacketTypes:
     ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS = 15
     ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS = 16
     ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS = 17
+    
+    ###################
+    ##    Character 
+    ###################    
+    # Client
+    
+    # Server
 
 class Config:
     
