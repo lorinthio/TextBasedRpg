@@ -1,6 +1,7 @@
 from threading import Thread
 from Client import ClientConnection
 from Database import DatabaseService
+from PacketHandler import ServerPacketHandler
 import Serialization
 import socket
 
@@ -9,6 +10,7 @@ class Server:
     def __init__(self, host, port):
         self.clients = []
         self.dbService = DatabaseService()
+        self.packetHandler = ServerPacketHandler()
         self.currentID = 0
         self.host = host
         self.port = port
@@ -27,9 +29,9 @@ class Server:
             Thread(target = self.handleClientConnection, args= (client, address)).start()
         
     def handleClientConnection(self, client, address):
-        print "Got Client Connection"
         self.currentID = self.currentID + 1
-        self.clients.append(ClientConnection(client, address, self.currentID))
+        print "Got Client Connection, ID: " + str(self.currentID)
+        self.clients.append(ClientConnection(self.packetHandler, client, address, self.currentID))
         
 if __name__ == "__main__":
     server = Server('', 8123).listen()

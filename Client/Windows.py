@@ -1,7 +1,7 @@
 from Tkinter import *
 from Commands import enterChatVar
-from WindowHelpers import setupGrid, centerWindow
-from Utils import PacketTypes
+from Common.WindowHelpers import setupGrid, centerWindow
+from Common.Utils import PacketTypes
 import cPickle as pickle
 import socket
 import Serialization

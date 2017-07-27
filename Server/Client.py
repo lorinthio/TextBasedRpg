@@ -3,7 +3,8 @@ from Utils import PacketTypes
 
 class ClientConnection:
     
-    def __init__(self, client, address, ID):
+    def __init__(self, packetHandler, client, address, ID):
+        self.packetHandler = packetHandler
         self.dataSize = 1024
         self.client = client
         self.address = address
@@ -14,16 +15,7 @@ class ClientConnection:
         while True:
             try:
                 data = Serialization.deserialize(self.client.recv(self.dataSize))
-                msg = data["message"]
-                dat = data["data"]
-                if data:
-                    # Set the response to echo back the recieved data
-                    response = data
-                    print "Message : " + str(msg)
-                    print "Recieved {}".format(dat)
-                    self.send(PacketTypes.LOGIN_FAILURE, {})
-                else:
-                    raise error('Client disconnected')
+                self.packetHandler.handlePacket(data, self)
             except:
                 self.client.close()
                 return False
