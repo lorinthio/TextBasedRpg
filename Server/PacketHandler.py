@@ -14,6 +14,16 @@ class ServerPacketHandler:
             handleLogin(data, client)
             
     def handleLogin(self, data, client):
-        self.database
+        username = data["username"]
+        password = data["password"]
+        
+        account = self.database.getAccount(username)
+        if account:
+            if username == account[1] and password == account[2]:
+                client.send(PacketTypes.LOGIN_SUCCESS, None)
+            else:
+                client.send(PacketTypes.LOGIN_FAILURE, None)
+        else:
+            client.send(PacketTypes.LOGIN_FAILURE, None)
         
         

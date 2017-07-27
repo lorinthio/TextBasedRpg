@@ -2,7 +2,7 @@ from threading import Thread
 from Client import ClientConnection
 from Database import DatabaseService
 from PacketHandler import ServerPacketHandler
-import Serialization
+import Common.Serialization as Serialization
 import socket
 
 class Server:
@@ -10,7 +10,7 @@ class Server:
     def __init__(self, host, port):
         self.clients = []
         self.dbService = DatabaseService()
-        self.packetHandler = ServerPacketHandler()
+        self.packetHandler = ServerPacketHandler(self, self.dbService)
         self.currentID = 0
         self.host = host
         self.port = port

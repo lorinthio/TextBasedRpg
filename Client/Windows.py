@@ -4,7 +4,7 @@ from Common.WindowHelpers import setupGrid, centerWindow
 from Common.Utils import PacketTypes
 import cPickle as pickle
 import socket
-import Serialization
+import Common.Serialization as Serialization
 
 class GameWindow(Frame):
     

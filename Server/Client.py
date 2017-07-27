@@ -1,5 +1,5 @@
-import Serialization
-from Utils import PacketTypes
+import Common.Serialization as Serialization
+from Common.Utils import PacketTypes
 
 class ClientConnection:
     
