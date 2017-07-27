@@ -1,5 +1,6 @@
 from threading import Thread
 from Client import ClientConnection
+from Database import DatabaseService
 import Serialization
 import socket
 
@@ -7,6 +8,7 @@ class Server:
     
     def __init__(self, host, port):
         self.clients = []
+        self.dbService = DatabaseService()
         self.currentID = 0
         self.host = host
         self.port = port

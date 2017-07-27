@@ -21,10 +21,13 @@ class ClientConnection:
                     response = data
                     print "Message : " + str(msg)
                     print "Recieved {}".format(dat)
-                    packet = Serialization.pack(PacketTypes.LOGIN_FAILURE, {})
-                    self.client.send(packet)
+                    self.send(PacketTypes.LOGIN_FAILURE, {})
                 else:
                     raise error('Client disconnected')
             except:
                 self.client.close()
-                return False      
+                return False
+            
+    def send(self, message, data):
+        packet = Serialization.pack(message, data)
+        self.client.send(packet)        
