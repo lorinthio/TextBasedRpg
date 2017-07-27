@@ -66,19 +66,24 @@ class LoginWindow(Frame):
         self.password = StringVar()
         
     def createLoginWindow(self):
+        width = 250
+        height = 70
+        
         frame = Frame(self.master)
         setupGrid(self.master, 2, 3)
         frame.grid(row=0, column=0, rowspan=3, columnspan=2)
         setupGrid(frame, 2, 3)
         self.master.title("Login")
-        self.master.minsize(250, 70)
-        self.master.maxsize(250, 70)
+        self.master.minsize(width, height)
+        self.master.maxsize(width, height)
         
         Label(self.master, text="Username : ").grid(row=0, column=0)
         Label(self.master, text="Password : ").grid(row=1, column=0)
         Entry(self.master, textvariable=self.username).grid(row=0, column=1)
         Entry(self.master, textvariable=self.password, show="*").grid(row=1, column=1)
         Button(self.master, command=self.attemptLogin, text="Login").grid(row=2, column=0)
+        
+        self.centerWindow(self.master, width, height)
         
     def createAccountCreationWindow(self):
         frame = Frame(self.master)
@@ -112,16 +117,20 @@ class LoginWindow(Frame):
         w = 300
         h = 60
         
-        top.minsize(w, h)
-        top.maxsize(w, h)
+        self.centerWindow(top, w, h)
         
+        return top
+    
+    def centerWindow(self, window, width, height):
+        window.minsize(width, height)
+        window.maxsize(width, height)
+    
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws/2) - (w/2)
-        y = (hs/2) - (h/2)        
-        
-        top.geometry("{}x{}+{}+{}".format(w, h, x, y))
-        return top
+        x = (ws/2) - (width/2)
+        y = (hs/2) - (height/2)        
+    
+        window.geometry("{}x{}+{}+{}".format(width, height, x, y))        
                 
     def showSuccess(self):
         top = self.makeNotification("Login Success!")
