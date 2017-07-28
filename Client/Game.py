@@ -1,7 +1,8 @@
 from Tkinter import *
+from ttk import Progressbar, Style
 from Commands import enterChatVar
 from Common.WindowHelpers import setupGrid
-from Objects import Player
+from Objects import Player, Hero
 from Client import ClientConnection
 import Common.Serialization as Serialization
 
@@ -10,14 +11,14 @@ class GameWindow(Frame):
     def __init__(self, player, master=None):
         self.player = player
         Frame.__init__(self, master)
-        setupGrid(self.master, 6, 8)
+        setupGrid(self.master, 7, 6)
         self.setupVariables()
+        self.connect()
         self.setupWindow()
         self.setupChatFrame()
-        self.characterFrame = CharacterFrame(self)
+        self.characterFrame = CharacterFrame(self.master, self.client)
         self.entryBar()
         self.setupKeyBindings()
-        self.connect()
 
     def setupVariables(self):
         self.entryVar = StringVar()
@@ -25,17 +26,14 @@ class GameWindow(Frame):
 
     def setupWindow(self):
         self.master.title("Text Based Adventure")
-        self.master.maxsize(1000, 800)
-        self.master.minsize(600,400)
+        self.master.maxsize(1366, 968)
+        self.master.minsize(900,600)
         self.master["bg"] = "white"
         
     def setupChatFrame(self):
-        frame = Frame(self.master, bg="black")
-        setupGrid(frame, 4, 6)
-        frame.grid(row=0, column=2, rowspan=6, columnspan=4, sticky=W+E+S+N)
-        chatText = Text(frame, wrap=WORD)
-        chatText.grid(row=0, column=0, rowspan=6, columnspan=4, sticky=W+E+S+N)
-        scrollbar = Scrollbar(frame, command=chatText.yview)
+        chatText = Text(self.master, wrap=WORD)
+        chatText.grid(row=0, column=3, rowspan=6, columnspan=4, sticky=W+E+S+N)
+        scrollbar = Scrollbar(self.master, command=chatText.yview)
         chatText['yscrollcommand'] = scrollbar.set
         self.chatText = chatText
         
@@ -45,7 +43,7 @@ class GameWindow(Frame):
                          enterChatVar(self.chatText, self.entryVar))
         
     def entryBar(self):
-        Entry(self.master, textvariable=self.entryVar).grid(row=5, column=2, rowspan=1, columnspan=6, sticky=W+E+S)
+        Entry(self.master, textvariable=self.entryVar).grid(row=5, column=3, rowspan=1, columnspan=4, sticky=W+E+S)
         
     def connect(self):
         self.client = ClientConnection()
@@ -58,22 +56,29 @@ class GameWindow(Frame):
 
 class CharacterFrame(Frame):
     
-    def __init__(self, master):
+    def __init__(self, master, client):
         self.setupVariables()
-        frame = Frame(self.master)
-        frame.grid(row=0, column=0, rowspan=6, columnspan=2, sticky=W+E+S+N)
+        frame = Frame(master)
+        frame.grid(row=0, column=0, rowspan=6, columnspan=3, sticky=W+E+S+N)
     
-        Label(frame, text="Character", font=("Helvetica", 16), justify=LEFT, anchor=W).pack()
+        Label(frame, text="Character", font=("Helvetica", 16)).grid(row=0, column=0, sticky=W)
+        
+        Label(frame, text="Health", font=("Helvetica", 12)).grid(row=1, column=0, sticky=W)
+        can = Canvas(frame, width=200, height=14)
+        can.grid(row=2, column=0, sticky=W+E)
+        can.create_rectangle(0, 0, 200, 14, fill="green")
+        Label(frame, text="Mana", font=("Helvetica", 12)).grid(row=3, column=0, sticky=W)
+        can = Canvas(frame, width=200, height=14)
+        can.grid(row=4, column=0, sticky=W+E)
+        rect = can.create_rectangle(0, 0, 200, 14, fill="blue")
+        
+        can.coords(rect, 0,0,100,14)
         
     def setupVariables(self):
-        self.name = ""
-        self.health = 100
-        self.maxhealth = 100
-        self.mana = 100
-        self.maxmana = 100
+        self.hero = Hero()
         
     def handleCharacterPacket(self, packet):
-        continue
+        return
 
 def start(player):
     win = GameWindow(player)

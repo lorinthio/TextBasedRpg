@@ -30,8 +30,15 @@ class PacketTypes:
     ##    Character 
     ###################    
     # Client
+    CHARACTER_SPEAK = 20
+    CHARACTER_MOVE = 21
+    CHARACTER_ATTACK = 22
+    CHARACTER_SKILL = 23
     
     # Server
+    CHARACTER_LOAD = 25
+    CHARACTER_VITAL_TICK = 26
+    
 
 class Config:
     

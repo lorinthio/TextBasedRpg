@@ -17,6 +17,7 @@ class LoginWindow(Frame):
         config = getConfig()
         self.ServerAddress = config.ServerAddress # Change this when releasing
         self.Port = config.Port
+        self.PacketSize = config.PacketSize
         
     def setupVariables(self):
         self.username = StringVar()
@@ -39,10 +40,10 @@ class LoginWindow(Frame):
         self.master.minsize(width, height)
         self.master.maxsize(width, height)
         
-        Label(frame, text="Username : ").grid(row=0, column=0)
-        Label(frame, text="Password : ").grid(row=1, column=0)
-        Entry(frame, textvariable=self.username).grid(row=0, column=1)
-        Entry(frame, textvariable=self.password, show="*").grid(row=1, column=1)
+        Label(frame, text="Username : ").grid(row=0, column=0, sticky=E)
+        Label(frame, text="Password : ").grid(row=1, column=0, sticky=E)
+        Entry(frame, textvariable=self.username).grid(row=0, column=1, sticky=W)
+        Entry(frame, textvariable=self.password, show="*").grid(row=1, column=1, sticky=W)
         Button(frame, command=self.attemptLogin, text="Login").grid(row=2, column=0)
         Button(frame, command=self.createAccountCreationWindow, text="Register").grid(row=2, column=1)
         centerWindow(self.master, width, height)
@@ -59,12 +60,12 @@ class LoginWindow(Frame):
         self.activeFrame = frame
         
         self.master.title("Register")
-        Label(frame, text="Email : ").grid(row=0, column=0)
-        Label(frame, text="Username : ").grid(row=1, column=0)
-        Label(frame, text="Password : ").grid(row=2, column=0)
-        Entry(frame, textvariable=self.email).grid(row=0, column=1)
-        Entry(frame, textvariable=self.username).grid(row=1, column=1)
-        Entry(frame, textvariable=self.password, show="*").grid(row=2, column=1)
+        Label(frame, text="Email : ").grid(row=0, column=0, sticky=E)
+        Label(frame, text="Username : ").grid(row=1, column=0, sticky=E)
+        Label(frame, text="Password : ").grid(row=2, column=0, sticky=E)
+        Entry(frame, textvariable=self.email).grid(row=0, column=1, sticky=W)
+        Entry(frame, textvariable=self.username).grid(row=1, column=1, sticky=W)
+        Entry(frame, textvariable=self.password, show="*").grid(row=2, column=1, sticky=W)
         Button(frame, command=self.attemptCreate, text="Create").grid(row=3, column=0)
         Button(frame, command=self.createLoginWindow, text="Cancel").grid(row=3, column=1) 
         centerWindow(self.master, width, height)       
@@ -75,9 +76,9 @@ class LoginWindow(Frame):
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.ServerAddress, self.Port))
             try:
-                packet = Serialization.pack(PacketTypes.LOGIN, {"username": self.username.get(), "password": self.password.get()})
+                packet = Serialization.pack(PacketTypes.LOGIN, {"username": self.username.get().lower(), "password": self.password.get()})
                 conn.send(packet)
-                data = conn.recv(1024)
+                data = conn.recv(self.PacketSize)
                 if data:
                     data = Serialization.deserialize(data)
                     messageType = data["message"]
@@ -116,9 +117,9 @@ class LoginWindow(Frame):
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.ServerAddress, self.Port))
             try:
-                packet = Serialization.pack(PacketTypes.ACCOUNT_CREATE, {"username": self.username.get(), "password": self.password.get(), "email": self.email.get()})
+                packet = Serialization.pack(PacketTypes.ACCOUNT_CREATE, {"username": self.username.get().lower(), "password": self.password.get(), "email": self.email.get()})
                 conn.send(packet)
-                data = conn.recv(1024)
+                data = conn.recv(self.PacketSize)
                 if data:
                     data = Serialization.deserialize(data)
                     messageType = data["message"]

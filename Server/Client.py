@@ -14,11 +14,11 @@ class ClientConnection:
     def loop(self):
         while self.client:
             try:
-                data = Serialization.deserialize(self.client.recv(self.dataSize))
+                packet = self.client.recv(self.dataSize)
+                data = Serialization.deserialize(packet)
                 self.packetHandler.handlePacket(data, self)
             except:
                 self.client.close()
-                print "Client Disconnected"
                 self.client = None
             
     def send(self, message, data):
